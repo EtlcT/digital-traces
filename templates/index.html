@@ -7,6 +7,9 @@
 </head>
 <body>
     <h1>Hello, World ! Welcome</h1>
+    {% if nbvisits != None %}
+    <p>Total number of visitors from the creation of the website : {{ nbvisits }}</p>
+    {% endif %}
     <!-- A form with a button to access Google
         post method here as there is a text area 
         to be able to save user entries in a db in a secure way-->

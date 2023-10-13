@@ -1,6 +1,8 @@
 from flask import Flask, render_template
 from logging.config import dictConfig
 import requests
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 dictConfig({
     'version': 1,
@@ -18,10 +20,20 @@ dictConfig({
     }
 })
 
+
+# oAuth
+SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
+SERVICE_ACCOUNT_FILE = 'service.json'
+VIEW_ID = "407503035"
+credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+analytics = build('analyticsreporting', 'v4', credentials=credentials)
+
+
 app = Flask(__name__)
 
 
 @app.route("/", methods=['GET','POST'])
+
 def hello_world():
     
     prefix_google = """
@@ -35,7 +47,22 @@ def hello_world():
   gtag('config', 'G-QFMSBHD3XT');
 </script>
 """
-    return  prefix_google + render_template('index.html', cookies=None, response_text=None, status_code=None)
+## to get number of visitors from the beginning :
+    response = analytics.reports().batchGet(
+        body={
+            'reportRequests': [
+                {
+                    'viewId': VIEW_ID,
+                    'dateRanges': [{'startDate': '2023-09-01', 'endDate': 'today'}],
+                    'metrics': [{'expression': 'ga:sessions'}]
+                }
+            ]
+        }
+    ).execute()
+
+    nbvisits = response['reports'][0]['data']['totals'][0]['values'][0]
+
+    return  prefix_google + render_template('index.html', cookies=None, response_text=None, status_code=None, nbvisits=nbvisits)
 
 @app.route('/logger/')
 def logger():

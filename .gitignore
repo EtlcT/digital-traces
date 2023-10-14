@@ -1,2 +1,3 @@
-.venv
+.venv/
 service.json
+__pycache__/

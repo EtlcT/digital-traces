@@ -1,8 +1,14 @@
 from flask import Flask, render_template
 from logging.config import dictConfig
 import requests
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
+import os
+from google.analytics.data_v1beta import BetaAnalyticsDataClient
+from google.analytics.data_v1beta.types import (
+    DateRange,
+    Dimension,
+    Metric,
+    RunReportRequest,
+)
 
 dictConfig({
     'version': 1,
@@ -25,8 +31,8 @@ dictConfig({
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 SERVICE_ACCOUNT_FILE = 'service.json'
 VIEW_ID = "407503035"
-credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-analytics = build('analyticsreporting', 'v4', credentials=credentials)
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'service.json'
 
 
 app = Flask(__name__)
@@ -48,19 +54,21 @@ def hello_world():
 </script>
 """
 ## to get number of visitors from the beginning :
-    response = analytics.reports().batchGet(
-        body={
-            'reportRequests': [
-                {
-                    'viewId': VIEW_ID,
-                    'dateRanges': [{'startDate': '2023-09-01', 'endDate': 'today'}],
-                    'metrics': [{'expression': 'ga:sessions'}]
-                }
-            ]
-        }
-    ).execute()
+    client = BetaAnalyticsDataClient()
 
-    nbvisits = response['reports'][0]['data']['totals'][0]['values'][0]
+    request_api = RunReportRequest(
+    property=f"properties/{VIEW_ID}",
+    dimensions=[
+        Dimension(name="landingPagePlusQueryString")
+        ],
+        metrics=[
+            Metric(name="newUsers")
+        ],
+        date_ranges=[DateRange(start_date="2023-09-01", end_date="today")],
+    )
+    response = client.run_report(request_api)
+
+    nbvisits = response.rows[0].metric_values[0].value
 
     return  prefix_google + render_template('index.html', cookies=None, response_text=None, status_code=None, nbvisits=nbvisits)
 
@@ -76,7 +84,7 @@ def google_request():
         req = requests.get("https://www.google.com/")
         if req.status_code == 200 :
             google_cookies = req.cookies.get_dict()
-            return render_template('index.html', cookies=google_cookies, status_code=None, response_text=None)
+            return render_template('index.html', cookies=google_cookies, status_code=None, response_text=None, nbvisits=None)
         else:
             app.logger.error('Error while trying to access Google')
             return 'Failed to retrieve data from Google.'
@@ -88,7 +96,7 @@ def gAnalytics_request():
     try:
         req2 = requests.get("https://analytics.google.com/analytics/web/#/p407503035/reports/reportinghub?params=_u..nav%3Dmaui")
         if req2.status_code == 200:
-            return render_template('index.html', cookies=None , status_code=req2.status_code, response_text=req2.text)
+            return render_template('index.html', cookies=None , status_code=req2.status_code, response_text=req2.text, nbvisits=None)
         else:
             app.logger.error('Error while trying to access GAnalytics')
             return 'Failed to retrieve data from GAnalytics.'

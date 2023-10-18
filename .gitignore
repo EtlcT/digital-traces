@@ -1,3 +1,4 @@
 .venv/
 service.json
 __pycache__/
+Spacefile

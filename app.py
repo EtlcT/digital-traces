@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from logging.config import dictConfig
 import requests
 import os
@@ -9,6 +9,12 @@ from google.analytics.data_v1beta.types import (
     Metric,
     RunReportRequest,
 )
+import pytrends
+import lxml
+import pandas
+from pytrends.request import TrendReq
+
+pytrends = TrendReq(hl='en-US', tz=360)
 
 dictConfig({
     'version': 1,
@@ -99,5 +105,7 @@ def gAnalytics_request():
             return 'Failed to retrieve data from GAnalytics.'
     except Exception as e:
         return str(e)
-    
-    
+
+@app.route('/gTrends', methods=['GET'])
+def gTrends_request():
+    user_search = request.form()

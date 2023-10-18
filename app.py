@@ -28,10 +28,7 @@ dictConfig({
 
 
 # oAuth
-SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
-SERVICE_ACCOUNT_FILE = 'service.json'
 VIEW_ID = "407503035"
-
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'service.json'
 
 

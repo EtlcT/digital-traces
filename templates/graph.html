@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Trends</title>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+</head>
+<body>
+    <h1>Google Trends</h1>
+    <table id="gTrends_df" style="display: none;">
+        <thead></thead>
+        <tr></tr>
+    </table>
+    <h3>Charts concerning interests of those subjects : {{user_search}} </h4>
+    <div id="line_chart" class="charts"></div>
+    <div id="pie_chart" class="charts"></div>
+    <script type='text/javascript'>
+        var graphs = {{ line_graph_json | safe }};
+        Plotly.plot('line_chart',graphs,{});
+    </script>
+    <script type='text/javascript'>
+        var graphs = {{ pie_graph_json | safe }};
+        Plotly.plot('pie_chart',graphs,{});
+    </script>
+</body>
+
+</html>

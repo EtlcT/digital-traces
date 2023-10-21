@@ -49,8 +49,8 @@
     <pre>{{ response_text | safe }}</pre>
     {% endif %}
     <h4>Ask for Google trends info</h4>
-    <form action="/gTrends" method="get">
-        <input style="width:300px;" ="text" name="searchTrends" id="searchTrends" value="Insert words you want to obtain Google trends for" ><br>
+    <form action="/gTrends" method="post">
+        <input style="width:300px;" ="text" name="searchTrends" id="searchTrends" placeholder="Foot Rugby Basket" ><br>
         <input type="submit" value="Search Google trends">
     </form>
 </body>
